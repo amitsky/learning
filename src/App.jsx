@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import './App.css'
 import { auth, db } from './firebase'
-import {useAuthState} from 'react-firebase-hooks/auth'
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
-import { addDoc, collection } from 'firebase/firestore'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { GoogleAuthProvider, signInWithPopup, reauthenticateWithPopup, deleteUser } from 'firebase/auth'
+import { addDoc, deleteDoc , doc, collection, getFirestore } from 'firebase/firestore'
 import Chat from './components/Chat'
 import RoomForm from './components/RoomForm'
 
@@ -16,14 +16,17 @@ function App() {
     await signInWithPopup(auth, provider);
     const { uid, displayName, photoURL } = await auth.currentUser;
     await addDoc(collection(db, "Users"), {
-      name: displayName, 
+      name: displayName,
       avatar: photoURL,
       createdAt: Date.now(),
       uid
     });
   }
 
-  const signOut = () => {
+  const signOut = async() => {
+    // const provider = new GoogleAuthProvider();
+    // await reauthenticateWithPopup(user, provider);
+    // await deleteUser(user);
     auth.signOut()
   }
 
