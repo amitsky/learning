@@ -15,7 +15,7 @@ const RoomForm = ({ setCurrentRoom }) => {
                     }
                 }} type="text" placeholder='Enter Room-Id' className='p-3 font-medium focus:outline-none border-2 border-gray-500 rounded-lg' />
                 <button onClick={() => setCurrentRoom(inputRef.current.value)} className='p-4 bg-blue-800 text-white rounded-lg'>
-                    Enter Chat Room
+                    Enter
                 </button>
             </div>
         </div>

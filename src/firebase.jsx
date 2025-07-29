@@ -3,18 +3,12 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-    // apiKey: import.meta.env.VITE_FIREBASE_KEY,
-    // authDomain: "react-firebase-chat-app-e3ad2.firebaseapp.com",
-    // projectId: "react-firebase-chat-app-e3ad2",
-    // storageBucket: "react-firebase-chat-app-e3ad2.appspot.com",
-    // messagingSenderId: import.meta.env.VITE_SENDER_ID,
-    // appId: import.meta.env.VITE_APP_ID,
-    apiKey: "AIzaSyBNr5UV2aYdQjTflDi6abgS7hQidJTCQ8s",
-    authDomain: "react-firebase-real-chat.firebaseapp.com",
-    projectId: "react-firebase-real-chat",
-    storageBucket: "react-firebase-real-chat.firebasestorage.app",
-    messagingSenderId: "42028204661",
-    appId: "1:42028204661:web:3c7dc9827a01d6bad86e3c"
+    apiKey: "AIzaSyBRvvs3k0y_rCVMkF0Iw1HZfb7NmwnfYkM",
+    authDomain: "python-platform-c6298.firebaseapp.com",
+    projectId: "python-platform-c6298",
+    storageBucket: "python-platform-c6298.firebasestorage.app",
+    messagingSenderId: "700567604832",
+    appId: "1:700567604832:web:a06ae75ccae3c4c9833d05"
 };
 
 // Initialize Firebase

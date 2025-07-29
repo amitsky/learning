@@ -27,6 +27,7 @@ function App() {
     // const provider = new GoogleAuthProvider();
     // await reauthenticateWithPopup(user, provider);
     // await deleteUser(user);
+    setCurrentRoom('');
     auth.signOut()
   }
 
