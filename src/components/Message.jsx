@@ -17,7 +17,7 @@ const Message = ({
             <div className='w-[15rem] p-4 text-start bg-blue-600 rounded-xl h-auto relative pb-8'>
                 {text}
                 <div className={`bottom-2 text-xs font-light absolute ${!isOfUser ? 'right-4' : 'left-4'}`}>
-                    {new Date(createdAt).toDateString()}
+                    {new Date(createdAt).toDateString()+ ' '+new Date(createdAt).toLocaleTimeString("en-US")}
                 </div>
             </div>
             {
