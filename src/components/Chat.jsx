@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { auth, db } from '../firebase'
-import { addDoc, collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
+import { addDoc, collection, query, orderBy, limit, onSnapshot, updateDoc, doc, arrayUnion } from 'firebase/firestore'
 import Message from './Message'
 
 const Chat = ({ room, setCurrentRoom }) => {
@@ -18,7 +18,10 @@ const Chat = ({ room, setCurrentRoom }) => {
             name: displayName,
             avatar: photoURL,
             createdAt: Date.now(),
-            uid
+            uid,
+            readBy: {
+                [uid]: new Date().toISOString() // sender auto-reads their own message
+            }
         })
         setMessage('')
         // scroll to the bottom of messages.
@@ -33,8 +36,19 @@ const Chat = ({ room, setCurrentRoom }) => {
         )
         const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
             let theseMessages = [];
-            QuerySnapshot.forEach((doc) => {
-                theseMessages.push({ ...doc.data(), id: doc.id })
+            QuerySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                theseMessages.push({ ...data, id: docSnap.id })
+                // if (!data.readBy?.includes(auth.currentUser.uid)) {
+                //     updateDoc(doc(db, room, docSnap.id), {
+                //         readBy: arrayUnion(auth.currentUser.uid)
+                //     })
+                // }
+                if (auth.currentUser && !data.readBy?.[auth.currentUser.uid]) {
+                    updateDoc(doc(db, room, docSnap.id), {
+                        [`readBy.${auth.currentUser.uid}`]: new Date().toISOString()
+                    })
+                }
             })
             setMessages(theseMessages)
         })
@@ -62,6 +76,7 @@ const Chat = ({ room, setCurrentRoom }) => {
                                 imageSource={curr.avatar}
                                 isOfUser={auth.currentUser.displayName === curr.name}
                                 createdAt={curr.createdAt}
+                                readBy={curr.readBy}
                             />
                         )
                     })

@@ -19,7 +19,8 @@ function App() {
       name: displayName,
       avatar: photoURL,
       createdAt: Date.now(),
-      uid
+      uid,
+      seenBy: {}
     });
   }
 
