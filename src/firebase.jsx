@@ -3,12 +3,12 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDRjCBBBlf707HVy7l_YjA8IQ0lMaVUbP4",
-    authDomain: "python-d27a5.firebaseapp.com",
-    projectId: "python-d27a5",
-    storageBucket: "python-d27a5.firebasestorage.app",
-    messagingSenderId: "660520598684",
-    appId: "1:660520598684:web:2f85028f1111d97b924159"
+    apiKey: "AIzaSyCibl4l5T44mDFQaHGR0oTVGisslKWuBS8",
+    authDomain: "python-4248e.firebaseapp.com",
+    projectId: "python-4248e",
+    storageBucket: "python-4248e.firebasestorage.app",
+    messagingSenderId: "940870560039",
+    appId: "1:940870560039:web:127f7ebb53732e0425e102"
 };
 
 // Initialize Firebase
