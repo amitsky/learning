@@ -1,100 +1,118 @@
-import React from 'react'
-import { auth } from '../firebase'
+import React, { forwardRef, useRef, useState } from "react";
+import { auth } from "../firebase";
 
-const Message = ({
-    isOfUser = false,
-    text = 'initially empty',
-    userName = 'empty',
-    createdAt,
-    readBy
-}) => {
-    const formatDateTime = (isoString, isMobile = false) => {
-        if (!isoString) return ""
-        const dateObj = new Date(isoString)
-        if (isMobile) {
-            return dateObj.toLocaleDateString([], { month: '2-digit', day: '2-digit' }) +
-                ' ' +
-                dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-        return dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' }) +
-            ', ' +
-            dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
+const Message = forwardRef(
+  ({ id, isOfUser, text, userName, createdAt, readBy, replyTo, onReply }, ref) => {
+    const touchRef = useRef({ startX: 0, startY: 0, active: false });
+    const [offset, setOffset] = useState(0);
 
     const createdTime = createdAt?.seconds
-        ? new Date(createdAt.seconds * 1000)
-        : new Date(createdAt)
+      ? new Date(createdAt.seconds * 1000)
+      : new Date(createdAt ?? Date.now());
 
-    let readStatus = "Sent"
-    let readTimeMobile = ""
-    let readTimeDesktop = ""
-    if (isOfUser && readBy) {
-        const readers = Object.entries(readBy).filter(([uid]) => uid !== auth.currentUser?.uid)
-        if (readers.length > 0) {
-            if (readers.length === 1) {
-                readTimeMobile = formatDateTime(readers[0][1], true)
-                readTimeDesktop = formatDateTime(readers[0][1], false)
-                readStatus = `Seen at ${readTimeDesktop}`
-            } else {
-                readStatus = `Seen by ${readers.length} people`
-            }
-        }
+    let tickIcon = null;
+    let seenTime = null;
+
+    if (isOfUser) {
+      const readers = Object.entries(readBy || {}).filter(
+        ([uid]) => uid !== auth.currentUser?.uid
+      );
+      if (readers.length === 0) {
+        tickIcon = <span className="text-gray-400 text-[0.65rem]">✓</span>;
+      } else {
+        const latestSeen = new Date(
+          readers.map(([_, ts]) => new Date(ts)).sort((a, b) => b - a)[0]
+        );
+        seenTime = latestSeen.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        tickIcon = <span className="text-blue-500 text-[0.65rem] -mb-[2px]">✓✓</span>;
+      }
     }
 
+    // Swipe handlers for reply
+    const SWIPE_THRESHOLD = 60;
+    const MAX_DRAG = 120;
+
+    const handleTouchStart = (e) => {
+      const t = e.touches[0];
+      touchRef.current = { startX: t.clientX, startY: t.clientY, active: true };
+    };
+    const handleTouchMove = (e) => {
+      if (!touchRef.current.active) return;
+      const t = e.touches[0];
+      const dx = t.clientX - touchRef.current.startX;
+      const dy = t.clientY - touchRef.current.startY;
+
+      if (Math.abs(dy) > 15 && Math.abs(dy) > Math.abs(dx)) {
+        touchRef.current.active = false;
+        return;
+      }
+
+      if ((!isOfUser && dx > 0) || (isOfUser && dx < 0)) {
+        const clamped = Math.max(Math.min(dx * 0.6, MAX_DRAG), -MAX_DRAG);
+        setOffset(clamped);
+      }
+    };
+    const handleTouchEnd = (e) => {
+      if (!touchRef.current.active) return;
+      const dx = e.changedTouches[0].clientX - touchRef.current.startX;
+      const triggered =
+        Math.abs(dx) > SWIPE_THRESHOLD &&
+        ((!isOfUser && dx > 0) || (isOfUser && dx < 0));
+      if (triggered) onReply?.();
+      setOffset(0);
+      touchRef.current.active = false;
+    };
+
     return (
-        <div className={`w-full flex flex-col mb-3 px-3 sm:px-4 ${isOfUser ? 'items-end' : 'items-start'}`}>
-            
-            {/* Message bubble */}
-            <div
-                className={`relative max-w-[85%] sm:max-w-[70%] md:max-w-[60%] lg:max-w-[50%] 
-                            px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4 
-                            rounded-2xl shadow-md
-                            ${isOfUser 
-                                ? 'bg-green-600 text-white rounded-br-none dark:bg-green-500' 
-                                : 'bg-gray-200 text-gray-900 rounded-bl-none dark:bg-gray-700 dark:text-gray-100'
-                            }`}
-            >
-                {/* Username (for group chats, only if not user) */}
-                {/* {!isOfUser && (
-                    <p className="text-[0.65rem] sm:text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                        {userName}
-                    </p>
-                )} */}
-
-                {/* Message text */}
-                <p className="whitespace-pre-wrap break-words text-sm sm:text-base md:text-lg">
-                    {text}
-                </p>
+      <div
+        ref={ref}
+        className={`w-full flex mb-1 px-3 sm:px-4 ${isOfUser ? "justify-end" : "justify-start"}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          className={`flex flex-col max-w-[95%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[75%] ${
+            isOfUser ? "items-end" : "items-start"
+          }`}
+          style={{ transform: `translateX(${offset}px)` }}
+        >
+          {/* Reply Preview */}
+          {replyTo && (
+            <div className="mb-1 text-xs text-gray-600 dark:text-gray-300 border-l-2 border-blue-400 pl-2 truncate max-w-[250px]">
+              <span className="truncate block">{replyTo.text}</span>
             </div>
+          )}
 
-            {/* Timestamp + Read Receipts below bubble */}
-            <div className={`mt-1 flex flex-col ${isOfUser ? 'items-end' : 'items-start'}`}>
-                {/* Sent time */}
-                <span className={`text-[0.65rem] sm:text-xs md:text-sm 
-                    ${isOfUser ? "text-gray-400 dark:text-gray-300" : "text-gray-500 dark:text-gray-400"}`}>
-                    {createdTime.toLocaleDateString([], { month: '2-digit', day: '2-digit' }) +
-                     ' ' +
-                     createdTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+          {/* Message Bubble */}
+          <div
+            className={`relative inline-block min-w-[60px] px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded-2xl shadow-md break-words text-left ${
+              isOfUser
+                ? "bg-[#DCF8C6] text-gray-900 rounded-br-none dark:bg-[#054640] dark:text-white"
+                : "bg-white text-gray-900 rounded-bl-none dark:bg-[#202C33] dark:text-white"
+            }`}
+          >
+            <p className="whitespace-pre-wrap text-sm sm:text-base md:text-lg">{text}</p>
+          </div>
 
-                {/* Read receipts */}
-                {isOfUser && (
-                    <>
-                        {/* Mobile short */}
-                        {readTimeMobile && (
-                            <span className="text-[0.65rem] text-blue-400 dark:text-blue-300 sm:hidden">
-                                Seen {readTimeMobile}
-                            </span>
-                        )}
-                        {/* Tablet/Desktop full */}
-                        <span className="hidden sm:block text-xs md:text-sm text-blue-400 dark:text-blue-300">
-                            {readStatus}
-                        </span>
-                    </>
-                )}
+          {/* Sent Time (outside bubble) */}
+          <div className={`flex mt-1 text-[0.65rem] sm:text-xs ${isOfUser ? "justify-end" : "justify-start"}`}>
+            <span className="text-gray-500 dark:text-gray-300">
+              {createdTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </div>
+
+          {/* Seen ticks + seen time (outside bubble, separate line) */}
+          {isOfUser && tickIcon && (
+            <div className="flex mt-0.5 text-[0.65rem] sm:text-xs justify-end items-center gap-1">
+              {tickIcon}
+              {seenTime && <span className="text-gray-500 dark:text-gray-300">{seenTime}</span>}
             </div>
+          )}
         </div>
-    )
-}
+      </div>
+    );
+  }
+);
 
-export default Message
+export default Message;

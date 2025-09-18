@@ -7,7 +7,7 @@ const RoomForm = ({ setCurrentRoom }) => {
     return (
         <div className='w-full h-full  py-4 flex items-center justify-center'>
             <div className='w-[22rem] h-[22rem] flex flex-col justify-center items-center gap-4 bg-slate-300 rounded-xl'>
-                <h3 className='font-semibold text-2xl'>Enter the Id to join the Chat Room</h3>
+                <h3 className='font-semibold text-2xl'>Enter Id to join the Room</h3>
                 <input autoFocus ref={inputRef} onKeyUp={(e) => {
                     if (e.key === 'Enter') {
                         //joining the room

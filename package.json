@@ -12,7 +12,9 @@
   "dependencies": {
     "@dataconnect/generated": "file:src/dataconnect-generated",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
+    "emoji-picker-react": "^4.13.3",
     "firebase": "^10.14.1",
+    "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-firebase-hooks": "^5.1.1"
