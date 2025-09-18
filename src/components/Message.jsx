@@ -10,6 +10,7 @@ const Message = forwardRef(
       ? new Date(createdAt.seconds * 1000)
       : new Date(createdAt ?? Date.now());
 
+    // Seen ticks and time
     let tickIcon = null;
     let seenTime = null;
 
@@ -28,7 +29,7 @@ const Message = forwardRef(
       }
     }
 
-    // Swipe handlers for reply
+    // Swipe handlers
     const SWIPE_THRESHOLD = 60;
     const MAX_DRAG = 120;
 
@@ -41,12 +42,10 @@ const Message = forwardRef(
       const t = e.touches[0];
       const dx = t.clientX - touchRef.current.startX;
       const dy = t.clientY - touchRef.current.startY;
-
       if (Math.abs(dy) > 15 && Math.abs(dy) > Math.abs(dx)) {
         touchRef.current.active = false;
         return;
       }
-
       if ((!isOfUser && dx > 0) || (isOfUser && dx < 0)) {
         const clamped = Math.max(Math.min(dx * 0.6, MAX_DRAG), -MAX_DRAG);
         setOffset(clamped);
@@ -65,26 +64,17 @@ const Message = forwardRef(
 
     return (
       <div
-        ref={ref}
-        className={`w-full flex mb-1 px-3 sm:px-4 ${isOfUser ? "justify-end" : "justify-start"}`}
+        ref={ref} // attach for scroll
+        className={`w-full flex mb-1 px-2 ${isOfUser ? "justify-end" : "justify-start"}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className={`flex flex-col max-w-[95%] sm:max-w-[90%] md:max-w-[80%] lg:max-w-[75%] ${
-            isOfUser ? "items-end" : "items-start"
-          }`}
+          className={`flex flex-col max-w-[98%] ${isOfUser ? "items-end" : "items-start"}`}
           style={{ transform: `translateX(${offset}px)` }}
         >
-          {/* Reply Preview */}
-          {replyTo && (
-            <div className="mb-1 text-xs text-gray-600 dark:text-gray-300 border-l-2 border-blue-400 pl-2 truncate max-w-[250px]">
-              <span className="truncate block">{replyTo.text}</span>
-            </div>
-          )}
-
-          {/* Message Bubble */}
+          {/* Message bubble */}
           <div
             className={`relative inline-block min-w-[60px] px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded-2xl shadow-md break-words text-left ${
               isOfUser
@@ -92,17 +82,27 @@ const Message = forwardRef(
                 : "bg-white text-gray-900 rounded-bl-none dark:bg-[#202C33] dark:text-white"
             }`}
           >
+            {/* Reply preview */}
+            {replyTo && (
+              <div className="mb-1 text-xs text-gray-700 dark:text-gray-300 border-l-2 border-blue-400 pl-2">
+                <span className="truncate block max-w-[250px]">{replyTo.text}</span>
+              </div>
+            )}
             <p className="whitespace-pre-wrap text-sm sm:text-base md:text-lg">{text}</p>
           </div>
 
-          {/* Sent Time (outside bubble) */}
-          <div className={`flex mt-1 text-[0.65rem] sm:text-xs ${isOfUser ? "justify-end" : "justify-start"}`}>
+          {/* Sent time */}
+          <div
+            className={`flex mt-1 text-[0.65rem] sm:text-xs ${
+              isOfUser ? "justify-end" : "justify-start"
+            }`}
+          >
             <span className="text-gray-500 dark:text-gray-300">
               {createdTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
 
-          {/* Seen ticks + seen time (outside bubble, separate line) */}
+          {/* Seen ticks + time */}
           {isOfUser && tickIcon && (
             <div className="flex mt-0.5 text-[0.65rem] sm:text-xs justify-end items-center gap-1">
               {tickIcon}

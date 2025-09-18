@@ -22,10 +22,11 @@ const Chat = ({ room, setCurrentRoom }) => {
 
   const scrollRef = useRef(null);
   const pickerRef = useRef(null);
-  const messageRefs = useRef({});
+  const messageRefs = useRef({}); // store refs for each message
 
   const sendMessage = async () => {
     if (!message.trim()) return;
+
     const { uid, displayName, photoURL } = auth.currentUser;
 
     await addDoc(collection(db, room), {
@@ -34,7 +35,9 @@ const Chat = ({ room, setCurrentRoom }) => {
       avatar: photoURL,
       createdAt: Date.now(),
       uid,
-      readBy: { [uid]: new Date().toISOString() },
+      readBy: {
+        [uid]: new Date().toISOString(),
+      },
       replyTo: replyingTo
         ? { text: replyingTo.text, name: replyingTo.userName, id: replyingTo.id }
         : null,
@@ -45,6 +48,7 @@ const Chat = ({ room, setCurrentRoom }) => {
     scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   };
 
+  // Load messages
   useEffect(() => {
     const q = query(collection(db, room), orderBy("createdAt"), limit(50));
     const unsubscribe = onSnapshot(q, (snap) => {
@@ -63,10 +67,12 @@ const Chat = ({ room, setCurrentRoom }) => {
     return () => unsubscribe();
   }, [room]);
 
+  // Auto-scroll to bottom
   useEffect(() => {
     scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
+  // Emoji picker outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (pickerRef.current && !pickerRef.current.contains(e.target)) {
@@ -79,21 +85,22 @@ const Chat = ({ room, setCurrentRoom }) => {
 
   const onEmojiClick = (emojiData) => setMessage((prev) => prev + emojiData.emoji);
 
+  // Scroll to original message
   const scrollToMessage = (msgId) => {
     const ref = messageRefs.current[msgId];
     if (ref && ref.current) {
       ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
-      ref.current.classList.add("animate-pulse");
-      setTimeout(() => ref.current.classList.remove("animate-pulse"), 800);
+      ref.current.classList.add("bg-yellow-200");
+      setTimeout(() => ref.current.classList.remove("bg-yellow-200"), 1000);
     }
   };
 
   return (
-    <div className="mt-4 w-[96%] mx-auto border-2 bg-slate-200 shadow-xl rounded-xl p-2 h-[85vh] flex flex-col relative">
-      {/* Exit Button */}
+    <div className="mt-4 w-[98%] mx-auto border-2 bg-slate-200 shadow-xl rounded-xl p-4 h-[85vh] flex flex-col relative">
+      {/* Exit */}
       <div
         onClick={() => setCurrentRoom("")}
-        className="absolute left-1 top-1 p-3 text-white bg-red-500 rounded-xl z-[30] cursor-pointer"
+        className="absolute left-1 top-1 p-3 text-white bg-red-500 rounded-xl text-xm z-[30]"
       >
         Exit
       </div>
@@ -113,7 +120,9 @@ const Chat = ({ room, setCurrentRoom }) => {
               readBy={msg.readBy}
               replyTo={msg.replyTo}
               isOfUser={auth.currentUser.displayName === msg.name}
-              onReply={() => setReplyingTo({ text: msg.text, userName: msg.name, id: msg.id })}
+              onReply={() =>
+                setReplyingTo({ text: msg.text, userName: msg.name, id: msg.id })
+              }
             />
           );
         })}
@@ -129,7 +138,10 @@ const Chat = ({ room, setCurrentRoom }) => {
             <span className="text-xs truncate block">{replyingTo.text}</span>
           </div>
           <button
-            onClick={(e) => { e.stopPropagation(); setReplyingTo(null); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setReplyingTo(null);
+            }}
             className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-300"
           >
             ✕
@@ -140,7 +152,11 @@ const Chat = ({ room, setCurrentRoom }) => {
       {/* Input */}
       <div className="absolute bottom-0 left-0 right-0 flex items-center gap-2 px-2 py-2 bg-slate-100 rounded-t-lg z-10">
         <div className="flex items-center gap-2 flex-1 bg-white border-2 rounded-xl px-2 overflow-hidden">
-          <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="p-2 hover:bg-gray-100 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="p-2 hover:bg-gray-100 flex-shrink-0"
+          >
             <Smile size={22} />
           </button>
           <input
@@ -152,13 +168,19 @@ const Chat = ({ room, setCurrentRoom }) => {
             value={message}
           />
         </div>
-        <button onClick={sendMessage} className="w-[50px] h-[45px] flex items-center justify-center rounded-xl bg-green-600 text-white hover:bg-green-700 flex-shrink-0">
+        <button
+          onClick={sendMessage}
+          className="w-[50px] h-[45px] flex items-center justify-center rounded-xl bg-green-600 text-white hover:bg-green-700 flex-shrink-0"
+        >
           <SendHorizonal size={22} />
         </button>
       </div>
 
       {showEmojiPicker && (
-        <div ref={pickerRef} className="absolute bottom-20 left-2 z-50 bg-white border rounded-xl shadow-lg">
+        <div
+          ref={pickerRef}
+          className="absolute bottom-20 left-2 z-50 bg-white border rounded-xl shadow-lg"
+        >
           <EmojiPicker onEmojiClick={onEmojiClick} />
         </div>
       )}
