@@ -44,3 +44,13 @@
   width: 30px !important;
   height: 30px !important;
 }
+
+.highlight-message {
+  animation: highlight 0.8s ease-in-out;
+}
+
+@keyframes highlight {
+  0% { background-color: #fff3b0; }
+  100% { background-color: transparent; }
+}
+

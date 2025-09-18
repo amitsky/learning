@@ -22,7 +22,7 @@ const Chat = ({ room, setCurrentRoom }) => {
 
   const scrollRef = useRef(null);
   const pickerRef = useRef(null);
-  const messageRefs = useRef({}); // store refs for each message
+  const messageRefs = useRef({});
 
   const sendMessage = async () => {
     if (!message.trim()) return;
@@ -67,7 +67,7 @@ const Chat = ({ room, setCurrentRoom }) => {
     return () => unsubscribe();
   }, [room]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll
   useEffect(() => {
     scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
@@ -85,19 +85,19 @@ const Chat = ({ room, setCurrentRoom }) => {
 
   const onEmojiClick = (emojiData) => setMessage((prev) => prev + emojiData.emoji);
 
-  // Scroll to original message
+  // Scroll to original message with highlight
   const scrollToMessage = (msgId) => {
     const ref = messageRefs.current[msgId];
     if (ref && ref.current) {
       ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
-      ref.current.classList.add("bg-yellow-200");
-      setTimeout(() => ref.current.classList.remove("bg-yellow-200"), 1000);
+      ref.current.classList.add("highlight-message");
+      setTimeout(() => ref.current.classList.remove("highlight-message"), 800);
     }
   };
 
   return (
     <div className="mt-4 w-[98%] mx-auto border-2 bg-slate-200 shadow-xl rounded-xl p-4 h-[85vh] flex flex-col relative">
-      {/* Exit */}
+      {/* Exit Button */}
       <div
         onClick={() => setCurrentRoom("")}
         className="absolute left-1 top-1 p-3 text-white bg-red-500 rounded-xl text-xm z-[30]"
@@ -123,6 +123,7 @@ const Chat = ({ room, setCurrentRoom }) => {
               onReply={() =>
                 setReplyingTo({ text: msg.text, userName: msg.name, id: msg.id })
               }
+              scrollToMessage={scrollToMessage} // pass scroll function
             />
           );
         })}

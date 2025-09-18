@@ -2,7 +2,7 @@ import React, { forwardRef, useRef, useState } from "react";
 import { auth } from "../firebase";
 
 const Message = forwardRef(
-  ({ id, isOfUser, text, userName, createdAt, readBy, replyTo, onReply }, ref) => {
+  ({ id, isOfUser, text, userName, createdAt, readBy, replyTo, onReply, scrollToMessage }, ref) => {
     const touchRef = useRef({ startX: 0, startY: 0, active: false });
     const [offset, setOffset] = useState(0);
 
@@ -10,10 +10,8 @@ const Message = forwardRef(
       ? new Date(createdAt.seconds * 1000)
       : new Date(createdAt ?? Date.now());
 
-    // Seen ticks and time
     let tickIcon = null;
     let seenTime = null;
-
     if (isOfUser) {
       const readers = Object.entries(readBy || {}).filter(
         ([uid]) => uid !== auth.currentUser?.uid
@@ -64,8 +62,8 @@ const Message = forwardRef(
 
     return (
       <div
-        ref={ref} // attach for scroll
-        className={`w-full flex mb-1 px-2 ${isOfUser ? "justify-end" : "justify-start"}`}
+        ref={ref}
+        className={`w-full flex mb-1 px-3 sm:px-4 ${isOfUser ? "justify-end" : "justify-start"}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -74,7 +72,7 @@ const Message = forwardRef(
           className={`flex flex-col max-w-[98%] ${isOfUser ? "items-end" : "items-start"}`}
           style={{ transform: `translateX(${offset}px)` }}
         >
-          {/* Message bubble */}
+          {/* Bubble */}
           <div
             className={`relative inline-block min-w-[60px] px-3 py-2 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded-2xl shadow-md break-words text-left ${
               isOfUser
@@ -82,21 +80,19 @@ const Message = forwardRef(
                 : "bg-white text-gray-900 rounded-bl-none dark:bg-[#202C33] dark:text-white"
             }`}
           >
-            {/* Reply preview */}
             {replyTo && (
-              <div className="mb-1 text-xs text-gray-700 dark:text-gray-300 border-l-2 border-blue-400 pl-2">
-                <span className="truncate block max-w-[250px]">{replyTo.text}</span>
+              <div
+                className="mb-1 text-xs text-gray-700 dark:text-gray-300 border-l-2 border-blue-400 pl-2 truncate max-w-[250px] cursor-pointer"
+                onClick={() => scrollToMessage(replyTo.id)}
+              >
+                <span className="truncate block">{replyTo.text}</span>
               </div>
             )}
             <p className="whitespace-pre-wrap text-sm sm:text-base md:text-lg">{text}</p>
           </div>
 
           {/* Sent time */}
-          <div
-            className={`flex mt-1 text-[0.65rem] sm:text-xs ${
-              isOfUser ? "justify-end" : "justify-start"
-            }`}
-          >
+          <div className={`flex mt-1 text-[0.65rem] sm:text-xs ${isOfUser ? "justify-end" : "justify-start"}`}>
             <span className="text-gray-500 dark:text-gray-300">
               {createdTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
